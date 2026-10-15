@@ -1,0 +1,7 @@
+node_modules/
+dist/
+*.pem
+*.key
+mcp-publisher
+.env
+.DS_Store

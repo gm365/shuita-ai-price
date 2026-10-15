@@ -1,0 +1,51 @@
+{
+  "name": "ai-price-mcp",
+  "version": "1.0.1",
+  "description": "MCP server for AI subscription price comparison — search 69 products across 126+ shops on shuita.xyz",
+  "type": "module",
+  "bin": {
+    "ai-price-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "server.json",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "start": "node dist/index.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "ai",
+    "chatgpt",
+    "claude",
+    "gemini",
+    "grok",
+    "cursor",
+    "price-comparison",
+    "subscription"
+  ],
+  "homepage": "https://shuita.xyz",
+  "license": "MIT",
+  "mcpName": "xyz.shuita/ai-price",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gm365/shuita-ai-price.git",
+    "directory": "mcp"
+  }
+}
