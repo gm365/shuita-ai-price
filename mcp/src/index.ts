@@ -156,7 +156,7 @@ function priceRange(data: SiteData, sku: string): string {
 
 const server = new McpServer({
   name: "shuita-ai-price",
-  version: "1.0.1",
+  version: "1.0.2",
 });
 
 // ── Tool 1: 搜索 AI 产品 ───────────────────────────────────────────────────

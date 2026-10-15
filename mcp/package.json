@@ -1,6 +1,6 @@
 {
   "name": "ai-price-mcp",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "MCP server for AI subscription price comparison — search 69 products across 126+ shops on shuita.xyz",
   "type": "module",
   "bin": {
