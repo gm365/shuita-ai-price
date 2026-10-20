@@ -49,25 +49,27 @@ Other clients:
 
 ## Step 3: Verify
 
-After saving, the server should show as connected with these 5 tools:
+After saving, the server should show as connected with these 7 tools:
 
 | Tool | Arguments | Purpose |
 | :--- | :--- | :--- |
-| `search_products` | `query` (string, Chinese or English, e.g. `"Claude Pro"`) | Find products, their in-shop price range, and how many shops have stock |
-| `get_lowest_price` | `sku` (string, e.g. `"claude_pro"`, `"gpt_plus_short"`) | Lowest verified in-stock price, description, and detail-page link for one SKU |
+| `search_products` | `query` (string, Chinese or English, e.g. `"Claude Pro"`), optional `limit` (1–30) | Find products, their in-shop price range, and how many shops have stock |
+| `get_lowest_price` | `sku` (string, e.g. `"claude_pro"`, `"gpt_plus_short"`) | Lowest verified in-stock price, which shop offers it, and the detail-page link for one SKU |
+| `get_offers` | `sku`, optional `limit` (1–20, default 5), `include_out_of_stock` (bool) | Per-shop offers, in stock first and sorted by landed RMB price, with fees, USDT price, stock and shop links |
+| `get_price_trend` | `sku` | Daily lowest buyable price over the last 30 days, with low/high and % change |
 | `list_shops` | `limit` (1–30, default 10), optional `platform` | Shops ranked by sales volume |
 | `list_all_products` | `sort` (`price` / `hits` / `merchants`), `has_price_only` (bool) | Browse every tracked product |
 | `get_site_stats` | none | Number of shops and products tracked, and when the data was last updated |
 
 To confirm it works, call `get_site_stats` (no arguments). It should return shop and product counts and a "数据更新时间" (last updated) line. Output is in Chinese and prices are in CNY (¥).
 
-Tip: SKUs are not guessable. Call `search_products` first, then pass the SKU shown in parentheses to `get_lowest_price`.
+Tip: SKUs are not guessable. Call `search_products` first, then pass the SKU shown in parentheses to `get_lowest_price`, `get_offers` or `get_price_trend`. Each tool also returns `structuredContent` for programmatic use.
 
 ## Troubleshooting
 
 - **First start is slow (a few seconds):** `npx` downloads the package the first time it runs. Later starts are fast.
 - **`npx` / `node` not found:** Node.js is missing or not on PATH. Install Node.js 18+ and restart the editor.
-- **Tool call returns an error such as `fetch failed` or `Failed to fetch core.json: 403`:** the machine cannot reach `https://shuita.xyz`. Check the network or proxy, then restart the server.
+- **Tool call returns `水獭数据暂时无法获取（…）` (data temporarily unavailable), e.g. a network error, timeout or HTTP 403:** the machine cannot reach `https://shuita.xyz`. Check the network or proxy, then restart the server.
 - **`未找到产品「…」` ("product not found"):** the SKU is wrong. Use `search_products` to get valid SKUs.
 
 ## Links
