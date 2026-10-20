@@ -2,14 +2,14 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "xyz.shuita/ai-price",
   "title": "水獭 AI 比价",
-  "description": "Compare AI subscription prices (ChatGPT, Claude, Gemini, Grok) across 120+ verified shops.",
+  "description": "Compare AI subscription prices (ChatGPT, Claude, Gemini, Grok) across 130+ verified shops.",
   "websiteUrl": "https://shuita.xyz",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "ai-price-mcp",
-      "version": "1.0.2",
+      "version": "1.1.0",
       "transport": {
         "type": "stdio"
       }
