@@ -2,6 +2,8 @@
 
 **English** · [中文](#中文说明)
 
+[![ToolSDK MCP Registry](https://badges.toolsdk.ai/badge/ai-price-mcp)](https://toolsdk-ai.github.io/toolsdk-mcp-registry/#ai-price-mcp)
+
 Public tools for [水獭 shuita.xyz](https://shuita.xyz), an AI subscription price tracker that checks 130+ card shops and Telegram bots twice daily to publish verified in-stock prices for ChatGPT, Claude, Gemini, Grok, Cursor, and more.
 
 | Path | Component | Install |
