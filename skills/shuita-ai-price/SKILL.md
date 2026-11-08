@@ -9,7 +9,7 @@ metadata:
 
 # 水獭 AI 订阅比价（shuita.xyz）
 
-水獭（[shuita.xyz](https://shuita.xyz)）追踪主流 AI 订阅与账号的渠道行情。每日两次巡检各家发卡网、独立小铺与 Telegram 发卡 Bot，只收录有现货的**店内实价**，剔除群聊引流虚标。
+水獭（[shuita.xyz](https://shuita.xyz)）追踪主流 AI 订阅与账号的渠道行情。数据每小时更新：每天两轮全量巡检各家发卡网、独立小铺与 Telegram 发卡 Bot，各商品排名靠前的报价每小时复查，只收录有现货的**店内实价**，剔除群聊引流虚标。
 
 ## 适用场景
 

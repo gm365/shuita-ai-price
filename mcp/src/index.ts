@@ -25,7 +25,7 @@ import { z } from "zod";
 
 const VERSION = "1.1.0";
 const SITE = "https://shuita.xyz";
-const CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟缓存（站点每天更新两次）
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟缓存（站点每小时更新）
 const FETCH_TIMEOUT_MS = 10_000;
 
 // ---------------------------------------------------------------------------
