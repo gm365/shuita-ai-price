@@ -23,7 +23,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-const VERSION = "1.1.0";
+const VERSION = "1.2.0";
 const SITE = "https://shuita.xyz";
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟缓存（站点每小时更新）
 const FETCH_TIMEOUT_MS = 10_000;
@@ -317,12 +317,25 @@ function toOffers(data: SiteData, floors: ShopFloor[], includeOut: boolean): Off
     });
 }
 
+/** 报价核验时间距今：刚刚 / N 分钟前 / N 小时前（48 小时内）/ N 天前，与站点 SKU 页一致 */
+function agoLabel(checked: string | undefined, now = Date.now()): string {
+  const t = checked ? Date.parse(checked) : NaN;
+  if (!Number.isFinite(t)) return "";
+  const min = Math.floor((now - t) / 60000);
+  if (min < 1) return "刚刚";
+  if (min < 60) return `${min} 分钟前`;
+  if (min < 48 * 60) return `${Math.floor(min / 60)} 小时前`;
+  return `${Math.floor(min / 1440)} 天前`;
+}
+
 function offerLine(o: Offer, i: number): string {
+  const ago = agoLabel(o.checked_at);
   const extras = [
     o.usdt_only ? "仅支持 USDT" : null,
     o.fee ? `标价 ${yuan(o.list_price)} + ${o.fee_channel ?? "支付"}手续费 ${yuan(o.fee)}` : null,
     o.usdt_price != null ? `USDT 付 ${yuan(o.usdt_price)}` : null,
     o.stock_count != null ? `库存 ${o.stock_count}` : STOCK_LABEL[o.stock],
+    ago ? `${ago}核验` : null,
   ].filter(Boolean);
   return `${i + 1}. ${o.shop} — ${yuan(o.price)}（${extras.join("，")}）\n   店铺：${o.shop_url ?? o.shop_page}`;
 }

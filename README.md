@@ -4,7 +4,7 @@
 
 [![ToolSDK MCP Registry](https://badges.toolsdk.ai/badge/ai-price-mcp)](https://toolsdk-ai.github.io/toolsdk-mcp-registry/#ai-price-mcp)
 
-Public tools for [水獭 shuita.xyz](https://shuita.xyz), an AI subscription price tracker that updates hourly: it scans 130+ card shops and Telegram bots in full twice a day and rechecks the top-ranked offers for each product every hour, publishing verified in-stock prices for ChatGPT, Claude, Gemini, Grok, Cursor, and more.
+Public tools for [水獭 shuita.xyz](https://shuita.xyz), an AI subscription price tracker that updates hourly: it scans 130+ card shops and Telegram bots in full at least twice a day (Liandong shops every 3 hours), rechecks the top-ranked offers for each product every hour, and shows when each offer was last checked, publishing verified in-stock prices for ChatGPT, Claude, Gemini, Grok, Cursor, and more.
 
 | Path | Component | Install |
 | :--- | :--- | :--- |
@@ -15,7 +15,7 @@ The MCP server supplies live pricing data and lookup tools; the Skill teaches AI
 
 ## 中文说明
 
-[水獭（shuita.xyz）](https://shuita.xyz)追踪主流 AI 订阅与账号的渠道行情，每小时更新：每天两轮全量巡检 130+ 家发卡网、独立小铺与 Telegram 发卡 Bot，各商品排名靠前的报价每小时复查，只收录有现货的**店内实价**，剔除群聊引流虚标。本仓库提供配套的 MCP 服务与 Agent Skill，方便各类 AI 助手直接接入查询。
+[水獭（shuita.xyz）](https://shuita.xyz)追踪主流 AI 订阅与账号的渠道行情，每小时更新：每天至少两轮全量巡检 130+ 家发卡网、独立小铺与 Telegram 发卡 Bot（链动小铺每 3 小时一轮），各商品排名靠前的报价每小时复查，每条报价都标明核验时间，只收录有现货的**店内实价**，剔除群聊引流虚标。本仓库提供配套的 MCP 服务与 Agent Skill，方便各类 AI 助手直接接入查询。
 
 *注：本站与会议转写工具 Otter.ai（中文常译「水獭 AI」）无关。*
 
@@ -73,7 +73,7 @@ cp -R shuita-ai-price/skills/shuita-ai-price ~/.claude/skills/
 
 - **可买最低价**：仅统计公开有货店铺的店内实盘价并取最低值，与商品页「低至」口径一致。
 - **到手价**：价格为人民币付款的到手价（标价 + 支付手续费，取该店人民币渠道里最便宜的）；用 USDT 付更便宜时另给 USDT 价。
-- **更新与缓存**：站点每小时更新（每天两轮全量巡检，排名靠前的报价每小时复查）；MCP 直接读取 `shuita.xyz` CDN 静态数据与商品页（本地缓存 5 分钟），无需 API Key。
+- **更新与缓存**：站点每小时更新（每天至少两轮全量巡检，链动小铺每 3 小时一轮，排名靠前的报价每小时复查；店铺报价附「N 分钟前核验」）；MCP 直接读取 `shuita.xyz` CDN 静态数据与商品页（本地缓存 5 分钟），无需 API Key。
 - **选品参考**：渠道价格与商品规格（直充、独享成品、拼车或短效号）及售后质保强相关，下单前建议查阅[《购买前核对清单》](https://shuita.xyz/guide/ai-subscription-buying-checklist)。
 
 ### 相关链接

@@ -4,12 +4,12 @@
   "title": "水獭 AI 比价",
   "description": "Compare AI subscription prices (ChatGPT, Claude, Gemini, Grok) across 130+ verified shops.",
   "websiteUrl": "https://shuita.xyz",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "ai-price-mcp",
-      "version": "1.1.0",
+      "version": "1.2.0",
       "transport": {
         "type": "stdio"
       }
