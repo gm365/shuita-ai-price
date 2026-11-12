@@ -8,8 +8,7 @@
  *   - /sku/<sku> 页面内嵌的 boot-data：各店报价（shop_floors）与 30 天走势（price_trend）
  * 静态资源请求不经过 Cloudflare Worker，不消耗免费套餐的每天 10 万次额度。
  *
- * User-Agent 固定为 `shuita-mcp/<版本> (+https://shuita.xyz)`（1.3.0 起），让站点能把 MCP 用量和其他程序分开统计。
- * 不要改成含 `ai-price` 的 UA：站点 WAF 对它做质询（防克隆站冒名）。
+ * User-Agent 固定为 `shuita-mcp/<版本> (+https://shuita.xyz)`（1.3.0 起），改动前先和站点维护者确认。
  *
  * 用法：
  *   npx -y ai-price-mcp
