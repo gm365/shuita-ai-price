@@ -22,7 +22,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-const VERSION = "1.3.0";
+const VERSION = "1.4.0";
 const SITE = "https://shuita.xyz";
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟缓存（站点每小时更新）
 const FETCH_TIMEOUT_MS = 10_000;
@@ -55,10 +55,7 @@ interface Shop {
   name: string;
   platform: string;
   province: string | null;
-  url: string; // https://shuita.xyz/go/<code>，出站跳转到商家店铺
-  sell_count: number | null;
-  last_ok: number;
-  sku_count: number;
+  url_host?: string;
   item_count: number;
 }
 
@@ -292,7 +289,6 @@ interface Offer {
   stock: StockStatus;
   stock_count?: number;
   checked_at?: string;
-  shop_url?: string;
   shop_page: string;
 }
 
@@ -315,7 +311,6 @@ function toOffers(data: SiteData, floors: ShopFloor[], includeOut: boolean): Off
       if (f.usdt_only) offer.usdt_only = true;
       if (f.stock_status === "in_stock" && f.stock_count != null) offer.stock_count = f.stock_count;
       if (f.checked_at) offer.checked_at = f.checked_at;
-      if (shop?.url) offer.shop_url = shop.url;
       return offer;
     });
 }
@@ -340,7 +335,7 @@ function offerLine(o: Offer, i: number): string {
     o.stock_count != null ? `库存 ${o.stock_count}` : STOCK_LABEL[o.stock],
     ago ? `${ago}核验` : null,
   ].filter(Boolean);
-  return `${i + 1}. ${o.shop} — ${yuan(o.price)}（${extras.join("，")}）\n   店铺：${o.shop_url ?? o.shop_page}`;
+  return `${i + 1}. ${o.shop} — ${yuan(o.price)}（${extras.join("，")}）\n   店铺：${o.shop_page}`;
 }
 
 function textResult(text: string, structuredContent: Record<string, unknown>): CallToolResult {
@@ -401,7 +396,6 @@ const offerShape = z.object({
   stock: z.enum(["in_stock", "unknown", "out"]),
   stock_count: z.number().optional(),
   checked_at: z.string().optional(),
-  shop_url: z.string().optional().describe("商家店铺链接（经 shuita.xyz/go/ 跳转）"),
   shop_page: z.string().describe("水獭上的店铺详情页"),
 });
 
@@ -507,7 +501,7 @@ server.registerTool(
             `💰 可买最低价（店内核验到手价，有货优先）：${yuan(p.min)}${cheapest ? `，来自「${cheapest.shop}」` : ""}`,
             ...(p.max != null ? [`💰 店内最高价：${yuan(p.max)}`] : []),
             ...(p.merchants != null ? [`🏪 在售店铺：${p.merchants} 家`] : []),
-            ...(cheapest?.shop_url ? [`🛒 最低价店铺：${cheapest.shop_url}`] : []),
+            ...(cheapest ? [`🛒 最低价店铺：${cheapest.shop_page}`] : []),
           ]
         : ["💰 暂无店内核验价"]),
       ...(summary.min != null ? [`📣 Telegram 广告宣称价：${yuan(summary.min)} 起（仅供参考，未核验）`] : []),
@@ -643,7 +637,7 @@ server.registerTool(
   {
     title: "列出收录店铺",
     description:
-      "按累计销量列出水獭收录的 AI 订阅店铺（卡网、独立站），可按平台筛选；返回店名、平台、销量、在售 SKU 数与店铺链接。",
+      "按在售商品数列出水獭收录的 AI 订阅店铺（卡网、独立站），可按平台筛选；返回店名、平台、在售商品数与水獭上的店铺页。",
     inputSchema: {
       limit: z.number().int().min(1).max(30).default(10).describe("返回数量，默认 10，最多 30"),
       platform: z
@@ -659,10 +653,7 @@ server.registerTool(
           name: z.string(),
           token: z.string(),
           platform: z.string(),
-          sell_count: z.number().nullable(),
-          sku_count: z.number(),
           item_count: z.number(),
-          url: z.string(),
           shop_page: z.string(),
         }),
       ),
@@ -679,24 +670,18 @@ server.registerTool(
       return errorResult(`没有平台「${platform}」。可选平台：${platforms.join("、")}`);
     }
     const filtered = key ? all.filter((s) => s.platform === key) : all;
-    const shops = [...filtered].sort((a, b) => (b.sell_count ?? -1) - (a.sell_count ?? -1)).slice(0, limit);
+    const shops = [...filtered].sort((a, b) => (b.item_count ?? 0) - (a.item_count ?? 0)).slice(0, limit);
     const rows = shops.map((s) => ({
       name: cleanShopName(s.name),
       token: s.token,
       platform: s.platform,
-      sell_count: s.sell_count,
-      sku_count: s.sku_count,
-      item_count: s.item_count,
-      url: s.url,
+      item_count: s.item_count ?? 0,
       shop_page: `${SITE}/shop/${encodeURIComponent(s.token)}`,
     }));
-    const lines = rows.map((s, i) => {
-      const sales = s.sell_count != null ? `${s.sell_count.toLocaleString("en-US")} 笔` : "未公开";
-      return `${i + 1}. ${s.name}\n   平台：${s.platform} | 销量：${sales} | 在售 SKU：${s.sku_count} | 商品：${s.item_count}\n   店铺：${s.url}`;
-    });
+    const lines = rows.map((s, i) => `${i + 1}. ${s.name}\n   平台：${s.platform} | 在售商品：${s.item_count}\n   店铺：${s.shop_page}`);
     const updated = data.meta.stats.updated;
     return textResult(
-      `共 ${filtered.length} 家店铺${key ? `（${key} 平台）` : ""}，按销量排序前 ${rows.length} 家：\n\n${lines.join("\n\n")}\n\n🔗 完整列表：${SITE}/shops\n📅 ${updated}`,
+      `共 ${filtered.length} 家店铺${key ? `（${key} 平台）` : ""}，按在售商品数排序前 ${rows.length} 家：\n\n${lines.join("\n\n")}\n\n🔗 完整列表：${SITE}/shops\n📅 ${updated}`,
       { total: filtered.length, platforms, shops: rows, updated },
     );
   }),

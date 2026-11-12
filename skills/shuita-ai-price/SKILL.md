@@ -29,7 +29,7 @@ metadata:
 | `get_lowest_price` | 按 SKU 查询单品可买最低价、最低价来自哪家店、商品简介与详情链接 |
 | `get_offers` | 按 SKU 列出各店报价（有货优先、按到手价排序），含手续费、USDT 价、库存与店铺链接 |
 | `get_price_trend` | 按 SKU 查询近 30 天可买最低价走势与涨跌幅 |
-| `list_shops` | 按历史销量查看收录店铺及在售规模，可按平台筛选 |
+| `list_shops` | 按在售商品数查看收录店铺，可按平台筛选 |
 | `list_all_products` | 按价格、热度或铺货量浏览全站品类 |
 | `get_site_stats` | 查看全站收录店铺数、商品总数及最近更新时间 |
 

@@ -35,7 +35,7 @@ npx -y ai-price-mcp
 | `get_lowest_price` | 查询单品可买最低价、来自哪家店与规格说明 | 查询 `gpt_plus_short` 的实盘底价 |
 | `get_offers` | 列出各店报价：到手价、手续费、USDT 价、库存与店铺链接 | 「Plus 直充哪家最便宜」 |
 | `get_price_trend` | 近 30 天可买最低价走势与涨跌幅 | 「Claude Pro 最近涨了还是跌了」 |
-| `list_shops` | 按历史销量查看收录店铺，可按平台筛选 | 「按销量列出前 10 家发卡店」 |
+| `list_shops` | 按在售商品数查看收录店铺，可按平台筛选 | 「列出在售商品最多的 10 家发卡店」 |
 | `list_all_products` | 浏览全站收录品类与行情 | 「目前覆盖了哪些 AI 订阅产品」 |
 | `get_site_stats` | 查看全站收录规模与更新时间 | 「一共收录了多少家店和商品」 |
 
