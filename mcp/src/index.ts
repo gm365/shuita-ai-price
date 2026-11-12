@@ -8,8 +8,8 @@
  *   - /sku/<sku> 页面内嵌的 boot-data：各店报价（shop_floors）与 30 天走势（price_trend）
  * 静态资源请求不经过 Cloudflare Worker，不消耗免费套餐的每天 10 万次额度。
  *
- * 不要设置自定义 User-Agent：站点 WAF 对含 `ai-price` 的 UA 做质询（防克隆站冒名），
- * Node 自带 fetch 的 `node` UA 在放行名单里。
+ * User-Agent 固定为 `shuita-mcp/<版本> (+https://shuita.xyz)`（1.3.0 起），让站点能把 MCP 用量和其他程序分开统计。
+ * 不要改成含 `ai-price` 的 UA：站点 WAF 对它做质询（防克隆站冒名）。
  *
  * 用法：
  *   npx -y ai-price-mcp
@@ -23,10 +23,11 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-const VERSION = "1.2.0";
+const VERSION = "1.3.0";
 const SITE = "https://shuita.xyz";
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟缓存（站点每小时更新）
 const FETCH_TIMEOUT_MS = 10_000;
+const USER_AGENT = `shuita-mcp/${VERSION} (+https://shuita.xyz)`;
 
 // ---------------------------------------------------------------------------
 // 数据结构
@@ -113,7 +114,10 @@ class SiteUnavailable extends Error {}
 async function get(path: string): Promise<Response> {
   let res: Response;
   try {
-    res = await fetch(`${SITE}${path}`, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    res = await fetch(`${SITE}${path}`, {
+      headers: { "user-agent": USER_AGENT },
+      signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
+    });
   } catch (err) {
     const reason = err instanceof Error && err.name === "TimeoutError" ? "请求超时" : "网络错误";
     throw new SiteUnavailable(`${reason}：${path}`);

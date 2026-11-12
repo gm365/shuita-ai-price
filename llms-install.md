@@ -9,7 +9,7 @@ Instructions for AI agents (Cline, Claude Code, Cursor, etc.) installing this MC
 - Requirements: Node.js 18 or later (`node -v`), plus `npx` (ships with npm)
 - API keys / environment variables: **none**. Do not ask the user for any key.
 - Do not clone or build this repository. The published npm package is the supported install path.
-- Network: the server fetches public static JSON from `https://shuita.xyz/data/` (cached in memory for 5 minutes). Read-only; it sends no user data.
+- Network: the server fetches public static JSON from `https://shuita.xyz/data/` and product pages under `https://shuita.xyz/sku/` (cached in memory for 5 minutes), identifying itself as `shuita-mcp/<version>`. Read-only; it sends no user data.
 
 ## Step 1: Check Node.js
 
