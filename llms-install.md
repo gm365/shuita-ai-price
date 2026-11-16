@@ -9,7 +9,7 @@ Instructions for AI agents (Cline, Claude Code, Cursor, etc.) installing this MC
 - Requirements: Node.js 18 or later (`node -v`), plus `npx` (ships with npm)
 - API keys / environment variables: **none**. Do not ask the user for any key.
 - Do not clone or build this repository. The published npm package is the supported install path.
-- Network: the server fetches public static JSON from `https://shuita.xyz/data/` and product pages under `https://shuita.xyz/sku/` (cached in memory for 5 minutes), identifying itself as `shuita-mcp/<version>`. Read-only; it sends no user data.
+- Network: the server fetches public static JSON slices under `https://shuita.xyz/api/mcp/` (product index, shop index, and one file per SKU; cached in memory for 5 minutes), identifying itself as `shuita-mcp/<version>`. Read-only; it sends no user data.
 
 ## Step 1: Check Node.js
 
@@ -57,7 +57,7 @@ After saving, the server should show as connected with these 7 tools:
 | `get_lowest_price` | `sku` (string, e.g. `"claude_pro"`, `"gpt_plus_short"`) | Lowest verified in-stock price, which shop offers it, and the detail-page link for one SKU |
 | `get_offers` | `sku`, optional `limit` (1–20, default 5), `include_out_of_stock` (bool) | Per-shop offers, in stock first and sorted by landed RMB price, with fees, USDT price, stock and shop links |
 | `get_price_trend` | `sku` | Daily lowest buyable price over the last 30 days, with low/high and % change |
-| `list_shops` | `limit` (1–30, default 10), optional `platform` | Shops ranked by sales volume |
+| `list_shops` | `limit` (1–30, default 10), optional `platform` | Shops ranked by listing count |
 | `list_all_products` | `sort` (`price` / `hits` / `merchants`), `has_price_only` (bool) | Browse every tracked product |
 | `get_site_stats` | none | Number of shops and products tracked, and when the data was last updated |
 

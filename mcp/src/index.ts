@@ -3,10 +3,11 @@
 /**
  * ai-price-mcp — 水獭 AI 订阅比价 MCP Server
  *
- * 在本地运行，从 shuita.xyz 的静态资源（Cloudflare CDN）读取数据：
- *   - /data/core.json、/data/meta.json：SKU 汇总、店铺索引与更新时间
- *   - /sku/<sku> 页面内嵌的 boot-data：各店报价（shop_floors）与 30 天走势（price_trend）
- * 静态资源请求不经过 Cloudflare Worker，不消耗免费套餐的每天 10 万次额度。
+ * 在本地运行，从 shuita.xyz 的查询式静态 JSON 切片读取数据：
+ *   - /api/mcp/index.json：产品目录、店内价格区间、站点统计与更新时间
+ *   - /api/mcp/shops.json：店铺目录
+ *   - /api/mcp/sku/<sku>.json：各店报价（shop_floors）与 30 天走势（price_trend）
+ * 本地缓存 5 分钟，无需 API Key。
  *
  * User-Agent 固定为 `shuita-mcp/<版本> (+https://shuita.xyz)`（1.3.0 起），改动前先和站点维护者确认。
  *
@@ -22,8 +23,9 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
 
-const VERSION = "1.4.0";
-const SITE = "https://shuita.xyz";
+const VERSION = "1.5.0";
+// 测试可用 AI_PRICE_SITE 指向本地 fixture；生产缺省始终为官方站点。
+const SITE = (process.env.AI_PRICE_SITE || "https://shuita.xyz").replace(/\/$/, "");
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 分钟缓存（站点每小时更新）
 const FETCH_TIMEOUT_MS = 10_000;
 const USER_AGENT = `shuita-mcp/${VERSION} (+https://shuita.xyz)`;
@@ -32,48 +34,38 @@ const USER_AGENT = `shuita-mcp/${VERSION} (+https://shuita.xyz)`;
 // 数据结构
 // ---------------------------------------------------------------------------
 
-// summaries 的 min / max / hits 来自 Telegram 广告报价快照，不是店内价；
-// 对外报价一律用 shop_summaries（爬虫在店内读到的到手价）。
+// telegram_min 来自 Telegram 广告报价快照，不是店内价；其余价格均为店内核验到手价。
 interface Summary {
   sku: string;
   name: string;
   blurb: string;
   hits: number;
-  merchants: number;
-  min: number | null;
-  max: number | null;
-}
-
-interface ShopSummary {
-  min_price: number;
-  max_price?: number;
-  merchants?: number;
+  merchants: number | null;
+  min_price: number | null;
+  max_price: number | null;
+  telegram_min: number | null;
 }
 
 interface Shop {
   token: string;
   name: string;
   platform: string;
-  province: string | null;
-  url_host?: string;
   item_count: number;
 }
 
-interface CoreData {
-  summaries: Summary[];
-  shop_summaries: Record<string, ShopSummary>;
-  shops_index: Shop[];
-  bots_index: unknown[];
+interface IndexData {
+  generated_at: string;
+  stats: { shops: number; items: number; bots: number; updated: string };
+  products: Summary[];
 }
 
-interface MetaData {
-  generated_at: string;
-  stats: { shops: number; items: number; sold: number; bots: number; updated: string };
+interface ShopsData {
+  shops: Shop[];
 }
 
 type StockStatus = "in_stock" | "unknown" | "out";
 
-/** SKU 页 boot-data.shop_floors：每家店在该 SKU 下的最低报价 */
+/** /api/mcp/sku/<sku>.json 的 shop_floors：每家店在该 SKU 下的最低报价 */
 interface ShopFloor {
   shop_token: string;
   shop_name?: string;
@@ -90,14 +82,15 @@ interface ShopFloor {
   checked_at: string | null;
 }
 
-interface SkuPage {
+interface SkuSlice {
   shop_floors: ShopFloor[];
   price_trend: Array<[string, number]>;
 }
 
 interface SiteData {
-  core: CoreData;
-  meta: MetaData;
+  index: IndexData;
+  shops: Shop[];
+  productsBySku: Map<string, Summary>;
   shopsByToken: Map<string, Shop>;
 }
 
@@ -126,26 +119,29 @@ let cachedSite: { at: number; data: SiteData } | null = null;
 
 async function fetchSiteData(): Promise<SiteData> {
   if (cachedSite && Date.now() - cachedSite.at < CACHE_TTL_MS) return cachedSite.data;
-  const [coreRes, metaRes] = await Promise.all([get("/data/core.json"), get("/data/meta.json")]);
-  const core = (await coreRes.json()) as CoreData;
-  const meta = (await metaRes.json()) as MetaData;
-  const data = { core, meta, shopsByToken: new Map(core.shops_index.map((s) => [s.token, s])) };
+  const [indexRes, shopsRes] = await Promise.all([get("/api/mcp/index.json"), get("/api/mcp/shops.json")]);
+  const index = (await indexRes.json()) as IndexData;
+  const { shops } = (await shopsRes.json()) as ShopsData;
+  const data = {
+    index,
+    shops,
+    productsBySku: new Map(index.products.map((s) => [s.sku, s])),
+    shopsByToken: new Map(shops.map((s) => [s.token, s])),
+  };
   cachedSite = { at: Date.now(), data };
   return data;
 }
 
-const skuCache = new Map<string, { at: number; page: SkuPage }>();
+const skuCache = new Map<string, { at: number; page: SkuSlice }>();
 
-async function fetchSkuPage(sku: string): Promise<SkuPage> {
+async function fetchSkuSlice(sku: string): Promise<SkuSlice> {
   const hit = skuCache.get(sku);
   if (hit && Date.now() - hit.at < CACHE_TTL_MS) return hit.page;
-  const html = await (await get(`/sku/${encodeURIComponent(sku)}`)).text();
-  const m = html.match(/<script type="application\/json" id="boot-data">([\s\S]*?)<\/script>/);
-  if (!m) throw new SiteUnavailable(`/sku/${sku} 页面结构变化，未找到报价数据`);
-  const boot = JSON.parse(m[1]) as Partial<SkuPage>;
-  const page: SkuPage = {
-    shop_floors: (boot.shop_floors ?? []).filter((f) => f.sku === sku),
-    price_trend: boot.price_trend ?? [],
+  const path = `/api/mcp/sku/${encodeURIComponent(sku)}.json`;
+  const body = (await (await get(path)).json()) as Partial<SkuSlice>;
+  const page: SkuSlice = {
+    shop_floors: (body.shop_floors ?? []).filter((f) => f.sku === sku),
+    price_trend: body.price_trend ?? [],
   };
   skuCache.set(sku, { at: Date.now(), page });
   return page;
@@ -215,7 +211,7 @@ function searchSummaries(data: SiteData, query: string): Match[] {
   const terms = tokenize(q);
   if (terms.length === 0) return [];
   const out: Match[] = [];
-  for (const s of data.core.summaries) {
+  for (const s of data.index.products) {
     const h = haystack(s);
     let score = 0;
     let hits = 0;
@@ -232,14 +228,14 @@ function searchSummaries(data: SiteData, query: string): Match[] {
   }
   const full = out.filter((m) => !m.partial);
   const pool = full.length > 0 ? full : out;
-  const merchants = (m: Match) => data.core.shop_summaries[m.summary.sku]?.merchants ?? 0;
+  const merchants = (m: Match) => m.summary.merchants ?? 0;
   return pool.sort((a, b) => b.score - a.score || merchants(b) - merchants(a));
 }
 
 /** 精确 SKU / 名称优先；否则只有唯一完全命中时才当作这个产品，其余给出候选 */
 function resolveSku(data: SiteData, input: string): { summary?: Summary; suggestions: Summary[] } {
   const key = input.trim().toLowerCase();
-  const exact = data.core.summaries.find((s) => s.sku === key || s.name.toLowerCase() === key);
+  const exact = data.index.products.find((s) => s.sku === key || s.name.toLowerCase() === key);
   if (exact) return { summary: exact, suggestions: [] };
   const matches = searchSummaries(data, input);
   if (matches.length === 1 && !matches[0].partial) return { summary: matches[0].summary, suggestions: [] };
@@ -265,9 +261,9 @@ const STOCK_LABEL: Record<StockStatus, string> = { in_stock: "有货", unknown: 
 const STOCK_RANK: Record<StockStatus, number> = { in_stock: 0, unknown: 1, out: 2 };
 
 function shopPrice(data: SiteData, sku: string) {
-  const s = data.core.shop_summaries?.[sku];
+  const s = data.productsBySku.get(sku);
   if (!s || s.min_price == null) return null;
-  return { min: s.min_price, max: s.max_price ?? null, merchants: s.merchants ?? null };
+  return { min: s.min_price, max: s.max_price, merchants: s.merchants };
 }
 
 function priceRange(data: SiteData, sku: string): string {
@@ -433,7 +429,7 @@ server.registerTool(
   },
   safe(async ({ query, limit }: { query: string; limit: number }) => {
     const data = await fetchSiteData();
-    const updated = data.meta.stats.updated;
+    const updated = data.index.stats.updated;
     const matches = searchSummaries(data, query);
     if (matches.length === 0) {
       return textResult(
@@ -488,7 +484,7 @@ server.registerTool(
     const p = shopPrice(data, summary.sku);
     let cheapest: Offer | null = null;
     try {
-      cheapest = toOffers(data, (await fetchSkuPage(summary.sku)).shop_floors, false)[0] ?? null;
+      cheapest = toOffers(data, (await fetchSkuSlice(summary.sku)).shop_floors, false)[0] ?? null;
     } catch {
       // 报价页取不到时仍返回汇总价
     }
@@ -504,17 +500,17 @@ server.registerTool(
             ...(cheapest ? [`🛒 最低价店铺：${cheapest.shop_page}`] : []),
           ]
         : ["💰 暂无店内核验价"]),
-      ...(summary.min != null ? [`📣 Telegram 广告宣称价：${yuan(summary.min)} 起（仅供参考，未核验）`] : []),
+      ...(summary.telegram_min != null ? [`📣 Telegram 广告宣称价：${yuan(summary.telegram_min)} 起（仅供参考，未核验）`] : []),
       "",
       `更多店铺报价：get_offers("${summary.sku}")；近 30 天走势：get_price_trend("${summary.sku}")`,
       `🔗 详情页：${SITE}/sku/${summary.sku}`,
-      `📅 数据更新：${data.meta.stats.updated}`,
+      `📅 数据更新：${data.index.stats.updated}`,
     ];
     return textResult(lines.join("\n"), {
       ...productOf(data, summary),
       blurb: summary.blurb,
       cheapest,
-      updated: data.meta.stats.updated,
+      updated: data.index.stats.updated,
     });
   }),
 );
@@ -547,10 +543,10 @@ server.registerTool(
     const { summary, suggestions } = resolveSku(data, sku);
     if (!summary) return notFound(sku, suggestions);
 
-    const all = toOffers(data, (await fetchSkuPage(summary.sku)).shop_floors, include_out_of_stock);
+    const all = toOffers(data, (await fetchSkuSlice(summary.sku)).shop_floors, include_out_of_stock);
     const offers = all.slice(0, limit);
     const url = `${SITE}/sku/${summary.sku}`;
-    const updated = data.meta.stats.updated;
+    const updated = data.index.stats.updated;
     const structured = { sku: summary.sku, name: summary.name, total: all.length, offers, url, updated };
     if (offers.length === 0) {
       return textResult(`「${summary.name}」目前没有可买的店铺报价。详情页：${url}`, structured);
@@ -597,7 +593,7 @@ server.registerTool(
     const { summary, suggestions } = resolveSku(data, sku);
     if (!summary) return notFound(sku, suggestions);
 
-    const points = (await fetchSkuPage(summary.sku)).price_trend.map(([date, price]) => ({ date, price }));
+    const points = (await fetchSkuSlice(summary.sku)).price_trend.map(([date, price]) => ({ date, price }));
     const url = `${SITE}/sku/${summary.sku}`;
     const base = { sku: summary.sku, name: summary.name, points, url };
     if (points.length === 0) {
@@ -663,7 +659,7 @@ server.registerTool(
   },
   safe(async ({ limit, platform }: { limit: number; platform?: string }) => {
     const data = await fetchSiteData();
-    const all = data.core.shops_index;
+    const all = data.shops;
     const platforms = [...new Set(all.map((s) => s.platform))].sort();
     const key = platform?.trim().toLowerCase();
     if (key && !platforms.includes(key)) {
@@ -679,7 +675,7 @@ server.registerTool(
       shop_page: `${SITE}/shop/${encodeURIComponent(s.token)}`,
     }));
     const lines = rows.map((s, i) => `${i + 1}. ${s.name}\n   平台：${s.platform} | 在售商品：${s.item_count}\n   店铺：${s.shop_page}`);
-    const updated = data.meta.stats.updated;
+    const updated = data.index.stats.updated;
     return textResult(
       `共 ${filtered.length} 家店铺${key ? `（${key} 平台）` : ""}，按在售商品数排序前 ${rows.length} 家：\n\n${lines.join("\n\n")}\n\n🔗 完整列表：${SITE}/shops\n📅 ${updated}`,
       { total: filtered.length, platforms, shops: rows, updated },
@@ -709,15 +705,15 @@ server.registerTool(
   safe(async () => {
     const data = await fetchSiteData();
     const stats = {
-      shops: data.core.shops_index.length,
-      bots: data.core.bots_index.length,
-      skus: data.core.summaries.length,
-      skus_with_price: data.core.summaries.filter((s) => shopPrice(data, s.sku) !== null).length,
-      items: data.meta.stats.items,
-      updated: data.meta.stats.updated,
-      generated_at: data.meta.generated_at,
+      shops: data.index.stats.shops,
+      bots: data.index.stats.bots,
+      skus: data.index.products.length,
+      skus_with_price: data.index.products.filter((s) => shopPrice(data, s.sku) !== null).length,
+      items: data.index.stats.items,
+      updated: data.index.stats.updated,
+      generated_at: data.index.generated_at,
     };
-    const topByHits = [...data.core.summaries].sort((a, b) => b.hits - a.hits).slice(0, 5);
+    const topByHits = [...data.index.products].sort((a, b) => b.hits - a.hits).slice(0, 5);
     const lines = [
       "📊 水獭 AI 比价站（shuita.xyz）概览",
       "",
@@ -759,7 +755,7 @@ server.registerTool(
   },
   safe(async ({ sort, has_price_only }: { sort: "price" | "hits" | "merchants"; has_price_only: boolean }) => {
     const data = await fetchSiteData();
-    let products = [...data.core.summaries];
+    let products = [...data.index.products];
     const priceOf = (sku: string) => shopPrice(data, sku);
     if (has_price_only) products = products.filter((s) => priceOf(s.sku) !== null);
 
@@ -781,7 +777,7 @@ server.registerTool(
       return `• ${s.name}（${s.sku}）— ${price}${p?.merchants != null ? `，${p.merchants} 家店铺` : ""}`;
     });
     const label = sort === "price" ? "店内最低价" : sort === "hits" ? "广告热度" : "在售店铺数";
-    const updated = data.meta.stats.updated;
+    const updated = data.index.stats.updated;
     return textResult(`共 ${products.length} 种产品，按${label}排序：\n\n${lines.join("\n")}\n\n📅 ${updated}`, {
       total: products.length,
       products: products.map((s) => productOf(data, s)),

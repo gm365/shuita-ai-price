@@ -31,7 +31,7 @@
 - **Verified prices, not ads.** Prices come from the shops' own storefronts and count only in-stock items. Telegram broadcast prices are shown separately and marked unverified.
 - **The price you actually pay.** CNY price including the cheapest Alipay / WeChat payment fee, plus a separate USDT price when paying in crypto is cheaper.
 - **Daily price snapshot** of the main products is in the [中文 section](#每日行情快照) below (CNY, refreshed every morning).
-- **No API key, read-only.** The server reads public static data from the shuita.xyz CDN (5-minute cache) and sends no user data.
+- **No API key, read-only.** Version 1.5.0 reads public query-style JSON slices from shuita.xyz (5-minute cache) and sends no user data.
 
 ### Quick start
 
@@ -63,11 +63,15 @@ Instructions for agent-assisted installs are in [`llms-install.md`](llms-install
 | `get_lowest_price` | `sku` | lowest in-stock price, which shop has it, price range, product page |
 | `get_offers` | `sku`, optional `limit`, `include_out_of_stock` | per-shop offers: price incl. fees, USDT price, stock, **last-checked time**, shop link |
 | `get_price_trend` | `sku` | 30-day daily low, change %, period high and low |
-| `list_shops` | optional platform | shops ranked by historical sales, with listing counts |
+| `list_shops` | optional platform | shops ranked by listing count, with platform filtering |
 | `list_all_products` | sort by `price` / `hits` / `merchants` | the full product catalog |
 | `get_site_stats` | — | shop, bot, product and listing counts; last update time |
 
 Every tool returns readable Chinese text plus `structuredContent` (typed JSON) for agents. Prices are in CNY (¥).
+
+### Data endpoints (1.5.0+)
+
+The server uses `/api/mcp/index.json` for the product catalog and site stats, `/api/mcp/shops.json` for the shop catalog, and `/api/mcp/sku/<SKU>.json` for offers and 30-day trends. It no longer parses product HTML or reads the legacy aggregate data files. Use the latest package; no API key is required.
 
 ### Example
 
@@ -211,7 +215,7 @@ MCP 负责查数据，Skill 负责解读：规格差异、报价口径和风险�
 - **可买最低价**：只统计公开有货店铺的店内实价并取最低值，与商品页「低至」一致。Telegram 群发价单独标为「广告宣称价」，不参与排序。
 - **到手价**：人民币付款的到手价（标价 + 该店人民币渠道里最便宜的支付手续费）。用 USDT 付更便宜时另给 USDT 价，只收 USDT 的店标「仅支持 USDT」。
 - **更新频率**：每天至少两轮全量巡检（北京时间约 8:30、20:30），链动小铺 6:00–0:00 每 3 小时一轮，各商品排名靠前的报价每小时复查。每条报价附核验时间。
-- **缓存**：MCP 直接读取 `shuita.xyz` 的 CDN 静态数据与商品页，本地缓存 5 分钟。
+- **缓存与切片**：1.5.0 起读取 `shuita.xyz/api/mcp/` 下的产品目录、店铺目录和单 SKU 报价/走势切片，不再解析商品 HTML 或读取旧版聚合文件。本地缓存 5 分钟，建议始终使用最新版。
 - **中立性**：MCP 的报价只按库存和价格排序。网站上的推荐位单独标「赞助」，不进入 MCP 的排序，见[透明度说明](https://shuita.xyz/disclosure)。
 
 ### 常见问题
