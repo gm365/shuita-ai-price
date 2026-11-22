@@ -148,26 +148,26 @@ MCP 负责查数据，Skill 负责解读：规格差异、报价口径和风险�
 ### 每日行情快照
 
 <!-- snapshot:start -->
-数据时间：2026-11-21 16:37（北京时间），每天自动从 [shuita.xyz/llms.txt](https://shuita.xyz/llms.txt) 刷新。只作量级参考，实时价格以 MCP 返回或商品页为准。「低至」是公开有货店铺里的最低人民币到手价；同一产品的低价往往对应短效、拼车或短质保等不同规格。
+数据时间：2026-11-22 16:34（北京时间），每天自动从 [shuita.xyz/llms.txt](https://shuita.xyz/llms.txt) 刷新。只作量级参考，实时价格以 MCP 返回或商品页为准。「低至」是公开有货店铺里的最低人民币到手价；同一产品的低价往往对应短效、拼车或短质保等不同规格。
 
 | 产品 | SKU | 低至 | 店内最高 | 在售店铺 | 美区官方月价 |
 | :--- | :--- | ---: | ---: | ---: | ---: |
-| [ChatGPT Plus 月付直充](https://shuita.xyz/sku/gpt_plus_topup) | `gpt_plus_topup` | ¥99.99 | ¥218.88 | 129 | $20 |
-| [ChatGPT Plus 月付成品号](https://shuita.xyz/sku/gpt_plus_month) | `gpt_plus_month` | ¥53 | ¥308.49 | 76 | $20 |
-| [ChatGPT Go 月付](https://shuita.xyz/sku/gpt_go) | `gpt_go` | ¥27.7 | ¥78 | 65 | $8 |
-| [ChatGPT Pro 5X](https://shuita.xyz/sku/gpt_pro_5x) | `gpt_pro_5x` | ¥595 | ¥968 | 119 | $100 |
-| [ChatGPT Pro 20X](https://shuita.xyz/sku/gpt_pro_20x) | `gpt_pro_20x` | ¥959 | ¥2163 | 126 | $200 |
+| [ChatGPT Plus 月付直充](https://shuita.xyz/sku/gpt_plus_topup) | `gpt_plus_topup` | ¥80 | ¥218.88 | 132 | $20 |
+| [ChatGPT Plus 月付成品号](https://shuita.xyz/sku/gpt_plus_month) | `gpt_plus_month` | ¥52.8 | ¥308.49 | 79 | $20 |
+| [ChatGPT Pro 5X](https://shuita.xyz/sku/gpt_pro_5x) | `gpt_pro_5x` | ¥594.9 | ¥968 | 120 | $100 |
+| [ChatGPT Pro 20X](https://shuita.xyz/sku/gpt_pro_20x) | `gpt_pro_20x` | ¥966 | ¥2163 | 125 | $200 |
 | [ChatGPT Pro 500](https://shuita.xyz/sku/gpt_pro_500) | `gpt_pro_500` | ¥2950 | ¥4635 | 93 | — |
-| [ChatGPT 短效 Plus](https://shuita.xyz/sku/gpt_plus_short) | `gpt_plus_short` | ¥15.14 | ¥98.88 | 59 | — |
-| [ChatGPT Team 5X 轮换车](https://shuita.xyz/sku/gpt_team_rotation) | `gpt_team_rotation` | ¥15.38 | ¥89.61 | 22 | — |
-| [ChatGPT Team 10X 车](https://shuita.xyz/sku/gpt_team_10x) | `gpt_team_10x` | ¥11.25 | ¥122.78 | 38 | — |
-| [Codex 额度](https://shuita.xyz/sku/codex_credit) | `codex_credit` | ¥70 | ¥1712.38 | 48 | — |
-| [Claude KYC](https://shuita.xyz/sku/claude_kyc) | `claude_kyc` | ¥78.88 | ¥587.1 | 42 | — |
-| [Gemini Pro](https://shuita.xyz/sku/gemini_pro) | `gemini_pro` | ¥15 | ¥360 | 59 | $19.99 |
-| [Gemini Ultra](https://shuita.xyz/sku/gemini_ultra) | `gemini_ultra` | ¥360.5 | ¥1500 | 42 | — |
-| [Antigravity(反重力)](https://shuita.xyz/sku/antigravity) | `antigravity` | ¥15 | ¥198 | 37 | — |
-| [Super Grok 月卡](https://shuita.xyz/sku/grok_super) | `grok_super` | ¥99 | ¥502.11 | 52 | $30 |
-| [API 中转站](https://shuita.xyz/sku/api_relay) | `api_relay` | ¥1 | ¥2573.71 | 31 | — |
+| [ChatGPT 短效 Plus](https://shuita.xyz/sku/gpt_plus_short) | `gpt_plus_short` | ¥17.64 | ¥98.88 | 60 | — |
+| [ChatGPT Team 5X 轮换车](https://shuita.xyz/sku/gpt_team_rotation) | `gpt_team_rotation` | ¥25.75 | ¥89.61 | 20 | — |
+| [ChatGPT Team 10X 车](https://shuita.xyz/sku/gpt_team_10x) | `gpt_team_10x` | ¥27.68 | ¥122.78 | 39 | — |
+| [Codex 额度](https://shuita.xyz/sku/codex_credit) | `codex_credit` | ¥70 | ¥1712.38 | 50 | — |
+| [Claude Pro](https://shuita.xyz/sku/claude_pro) | `claude_pro` | ¥208 | ¥391.4 | 39 | $20 |
+| [Claude KYC](https://shuita.xyz/sku/claude_kyc) | `claude_kyc` | ¥78.88 | ¥587.1 | 44 | — |
+| [Gemini Pro](https://shuita.xyz/sku/gemini_pro) | `gemini_pro` | ¥8 | ¥407.2 | 60 | $19.99 |
+| [Gemini Ultra](https://shuita.xyz/sku/gemini_ultra) | `gemini_ultra` | ¥360.5 | ¥1500 | 45 | — |
+| [Antigravity(反重力)](https://shuita.xyz/sku/antigravity) | `antigravity` | ¥15 | ¥198 | 43 | — |
+| [Super Grok 月卡](https://shuita.xyz/sku/grok_super) | `grok_super` | ¥99 | ¥502.11 | 56 | $30 |
+| [API 中转站](https://shuita.xyz/sku/api_relay) | `api_relay` | ¥1 | ¥2573.71 | 34 | — |
 <!-- snapshot:end -->
 
 全部 73 种产品可以调用 `list_all_products`，或访问 [shuita.xyz](https://shuita.xyz)。每月的价格变化见[月度价格报告（含 CSV 下载）](https://shuita.xyz/reports)。
