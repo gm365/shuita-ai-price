@@ -1,8 +1,10 @@
 {
   "author": "gm365",
   "authorUrl": "https://github.com/gm365",
+  "category": "tools",
   "description": "Live verified AI subscription price comparison across 160+ shops on shuita.xyz (ChatGPT, Claude, Gemini, Grok, Cursor). Updated hourly with CNY landed price (incl. fees), USDT pricing, 30-day trends, and 7 read-only structured tools via v1.5.0 query-style JSON slices. No API key needed.",
   "homepage": "https://shuita.xyz",
+  "icon": "https://raw.githubusercontent.com/gm365/shuita-ai-price/main/assets/logo-400.png",
   "identifier": "gm365-shuita-ai-price",
   "name": "shuita-ai-price",
   "prompts": [],
