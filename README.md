@@ -168,7 +168,7 @@ MCP 负责查数据，Skill 负责解读：规格差异、报价口径和风险�
 | [Claude Pro](https://shuita.xyz/sku/claude_pro) | `claude_pro` | ¥149 | ¥399.64 | 37 | $20 |
 | [Claude 5X](https://shuita.xyz/sku/claude_5x) | `claude_5x` | ¥800 | ¥1458 | 39 | $100 |
 | [Claude 20X](https://shuita.xyz/sku/claude_20x) | `claude_20x` | ¥1600 | ¥3000 | 39 | $200 |
-| [Claude Team](https://shuita.xyz/sku/claude_team) | `claude_team` | ¥141.63 | ¥1453.59 | 14 | $25 |
+| [Claude Team](https://shuita.xyz/sku/claude_team) | `claude_team` | ¥141.63 | ¥1453.59 | 15 | $25 |
 | [Claude KYC](https://shuita.xyz/sku/claude_kyc) | `claude_kyc` | ¥83.88 | ¥288 | 41 | — |
 | [Gemini Pro](https://shuita.xyz/sku/gemini_pro) | `gemini_pro` | ¥5 | ¥407.2 | 58 | $19.99 |
 | [Gemini Ultra](https://shuita.xyz/sku/gemini_ultra) | `gemini_ultra` | ¥360.5 | ¥1000 | 58 | — |
@@ -176,15 +176,15 @@ MCP 负责查数据，Skill 负责解读：规格差异、报价口径和风险�
 | [Super Grok 月卡](https://shuita.xyz/sku/grok_super) | `grok_super` | ¥196 | ¥299 | 51 | $30 |
 | [SuperGrok 15x 月卡](https://shuita.xyz/sku/grok_super_15x) | `grok_super_15x` | ¥598 | ¥1028.97 | 39 | — |
 | [Grok Heavy 月卡](https://shuita.xyz/sku/grok_heavy) | `grok_heavy` | ¥1080 | ¥1586.2 | 31 | $300 |
-| [Cursor Pro](https://shuita.xyz/sku/cursor_pro) | `cursor_pro` | ¥150 | ¥179.85 | 8 | — |
 | [Cursor Ultra](https://shuita.xyz/sku/cursor_ultra) | `cursor_ultra` | ¥434.91 | ¥1453.59 | 8 | — |
+| [Muse AI 成品号](https://shuita.xyz/sku/muse_account) | `muse_account` | ¥3 | ¥59 | 53 | — |
 | [ChatGPT Plus 邀请额度](https://shuita.xyz/sku/gpt_plus_invite) | `gpt_plus_invite` | ¥0.74 | ¥4.27 | 9 | — |
 | [ChatGPT 短效 Team](https://shuita.xyz/sku/gpt_team_short) | `gpt_team_short` | ¥11 | ¥38.5 | 22 | — |
 | [ChatGPT Plus 拼车](https://shuita.xyz/sku/gpt_plus_shared) | `gpt_plus_shared` | ¥50 | ¥68 | 7 | — |
 | [ChatGPT Plus 半价直充](https://shuita.xyz/sku/gpt_plus_topup_half) | `gpt_plus_topup_half` | ¥55.8 | ¥82.4 | 41 | — |
-| [ChatGPT Team 母号](https://shuita.xyz/sku/gpt_team_admin) | `gpt_team_admin` | ¥104.5 | ¥1061.05 | 29 | — |
+| [ChatGPT Team 母号](https://shuita.xyz/sku/gpt_team_admin) | `gpt_team_admin` | ¥104.5 | ¥1061.05 | 30 | — |
 | [ChatGPT Plus 年卡](https://shuita.xyz/sku/gpt_plus_year) | `gpt_plus_year` | ¥1350 | ¥1713.92 | 33 | — |
-| [Ultra 家庭席位](https://shuita.xyz/sku/gemini_ultra_family) | `gemini_ultra_family` | ¥193.38 | ¥326.45 | 19 | — |
+| [Ultra 家庭席位](https://shuita.xyz/sku/gemini_ultra_family) | `gemini_ultra_family` | ¥193.38 | ¥326.45 | 20 | — |
 | [Grok 短效](https://shuita.xyz/sku/grok_short) | `grok_short` | ¥1.13 | ¥36.94 | 7 | — |
 | [Grok Plus 月卡](https://shuita.xyz/sku/grok_plus) | `grok_plus` | ¥51 | ¥118 | 52 | — |
 | [Adobe Express](https://shuita.xyz/sku/adobe_express) | `adobe_express` | ¥3.12 | ¥99 | 11 | — |
@@ -259,6 +259,11 @@ MCP 负责查数据，Skill 负责解读：规格差异、报价口径和风险�
 | 入口 | 地址 |
 | :--- | :--- |
 | 官方网站 | <https://shuita.xyz> |
+| ChatGPT 比价专区 | <https://shuita.xyz/c/gpt> |
+| Claude 比价专区 | <https://shuita.xyz/c/claude> |
+| Gemini 比价专区 | <https://shuita.xyz/c/gemini> |
+| AI 中转站价格榜 | <https://shuita.xyz/relay> |
+| 浏览器比价扩展 | <https://shuita.xyz/extension> |
 | MCP 接入文档 | <https://shuita.xyz/mcp> |
 | AI 站点摘要 | <https://shuita.xyz/llms.txt> |
 | 月度价格报告（含 CSV） | <https://shuita.xyz/reports> |

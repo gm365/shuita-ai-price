@@ -17,7 +17,7 @@ const MIN_ROWS = 5;
 // 接码、邮箱、免费号这类配件不放进 README 快照
 const SKIP = new Set([
   "gpt_otp", "claude_otp", "mail_account", "gpt_free", "claude_free", "grok_free", "cursor_free",
-  "muse_account", "virtual_card", "apple_id", "tg_account", "x_account", "residential_ip",
+  "virtual_card", "apple_id", "tg_account", "x_account", "residential_ip",
   "payment_link", "gv_account",
 ]);
 // 固定顺序：主流订阅在前，减少每天的无谓变动；不在名单里的按品牌分组、再按价格排在后面
@@ -26,7 +26,7 @@ const ORDER = [
   "gpt_plus_short", "gpt_team_seat", "gpt_team_nonrotation", "gpt_team_rotation", "gpt_team_10x", "codex_credit",
   "claude_pro", "claude_5x", "claude_20x", "claude_team", "claude_kyc",
   "gemini_pro", "gemini_ultra", "antigravity", "grok_super", "grok_super_15x", "grok_heavy",
-  "cursor_pro", "cursor_ultra", "api_relay",
+  "cursor_pro", "cursor_ultra", "muse_account", "api_relay",
 ];
 const GROUPS = ["gpt_", "codex", "claude_", "gemini_", "antigravity", "grok_", "cursor_"];
 const NAMES = { api_relay: "API 中转站" };
