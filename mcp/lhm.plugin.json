@@ -1,0 +1,749 @@
+{
+  "author": "gm365",
+  "authorUrl": "https://github.com/gm365",
+  "description": "Live verified AI subscription price comparison across 160+ shops on shuita.xyz (ChatGPT, Claude, Gemini, Grok, Cursor). Updated hourly with CNY landed price (incl. fees), USDT pricing, 30-day trends, and 7 read-only structured tools via v1.5.0 query-style JSON slices. No API key needed.",
+  "homepage": "https://shuita.xyz",
+  "identifier": "gm365-shuita-ai-price",
+  "name": "shuita-ai-price",
+  "prompts": [],
+  "resources": [],
+  "tags": [
+    "mcp",
+    "price-comparison",
+    "ai-subscription",
+    "chatgpt",
+    "claude",
+    "gemini",
+    "grok",
+    "cursor"
+  ],
+  "tools": [
+    {
+      "name": "search_products",
+      "title": "搜索 AI 订阅产品",
+      "description": "按关键词搜索 AI 订阅产品（ChatGPT Plus、Claude Pro、Gemini、Grok、Cursor 等），返回 SKU、店内到手价区间和在售店铺数。支持中英文与常见俗称（如「克劳德」「GPT 会员」）。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "query": {
+            "type": "string",
+            "minLength": 1,
+            "description": "搜索关键词，如 'Claude Pro'、'ChatGPT Plus 直充'、'短效'、'Grok Heavy'"
+          },
+          "limit": {
+            "default": 10,
+            "description": "返回数量，默认 10，最多 30",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          }
+        },
+        "required": [
+          "query"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "approximate": {
+            "type": "boolean",
+            "description": "true 表示没有全部关键词都命中的产品，返回的是部分命中结果"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "min_price": {
+                  "description": "可买最低到手价（人民币，有货优先）",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "max_price": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "merchants": {
+                  "description": "在售店铺数",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sku",
+                "name",
+                "min_price",
+                "max_price",
+                "merchants",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "updated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "total",
+          "approximate",
+          "products",
+          "updated"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_lowest_price",
+      "title": "查询产品最低价",
+      "description": "查询某个 AI 产品的可买最低价（店内核验的人民币到手价，有货优先）、价格区间、在售店铺数，以及最低价来自哪家店。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "description": "产品 SKU，如 'gpt_plus_short'、'claude_pro'、'grok_heavy'；也接受产品名称。可先用 search_products 查找。"
+          }
+        },
+        "required": [
+          "sku"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "min_price": {
+            "description": "可买最低到手价（人民币，有货优先）",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "max_price": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "merchants": {
+            "description": "在售店铺数",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "url": {
+            "type": "string"
+          },
+          "blurb": {
+            "type": "string"
+          },
+          "cheapest": {
+            "anyOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "shop": {
+                    "type": "string"
+                  },
+                  "shop_token": {
+                    "type": "string"
+                  },
+                  "platform": {
+                    "type": "string"
+                  },
+                  "price": {
+                    "type": "number",
+                    "description": "人民币到手价（标价 + 支付手续费）"
+                  },
+                  "list_price": {
+                    "type": "number"
+                  },
+                  "fee": {
+                    "type": "number"
+                  },
+                  "fee_channel": {
+                    "type": "string"
+                  },
+                  "usdt_price": {
+                    "description": "用 USDT 付款时的价格（比人民币便宜时才有）",
+                    "type": "number"
+                  },
+                  "usdt_only": {
+                    "description": "该店只收 USDT",
+                    "type": "boolean"
+                  },
+                  "stock": {
+                    "type": "string",
+                    "enum": [
+                      "in_stock",
+                      "unknown",
+                      "out"
+                    ]
+                  },
+                  "stock_count": {
+                    "type": "number"
+                  },
+                  "checked_at": {
+                    "type": "string"
+                  },
+                  "shop_page": {
+                    "type": "string",
+                    "description": "水獭上的店铺详情页"
+                  }
+                },
+                "required": [
+                  "shop",
+                  "shop_token",
+                  "platform",
+                  "price",
+                  "stock",
+                  "shop_page"
+                ],
+                "additionalProperties": false
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "最低价对应的店铺；报价数据暂不可用时为 null"
+          },
+          "updated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sku",
+          "name",
+          "min_price",
+          "max_price",
+          "merchants",
+          "url",
+          "blurb",
+          "cheapest",
+          "updated"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_offers",
+      "title": "查看各店报价",
+      "description": "列出某个 AI 产品在各家店铺的报价，按「有货优先、再比到手价」排序：店名、人民币到手价（含支付手续费）、USDT 价、库存与店铺链接。用于回答「哪家店最便宜」「去哪买」。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "description": "产品 SKU 或名称，如 'claude_pro'、'gpt_plus_topup'"
+          },
+          "limit": {
+            "default": 5,
+            "description": "返回店铺数，默认 5，最多 20",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 20
+          },
+          "include_out_of_stock": {
+            "default": false,
+            "description": "是否包含明确无货的店铺，默认不包含",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "sku"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "total": {
+            "type": "number",
+            "description": "符合条件的店铺总数"
+          },
+          "offers": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "shop": {
+                  "type": "string"
+                },
+                "shop_token": {
+                  "type": "string"
+                },
+                "platform": {
+                  "type": "string"
+                },
+                "price": {
+                  "type": "number",
+                  "description": "人民币到手价（标价 + 支付手续费）"
+                },
+                "list_price": {
+                  "type": "number"
+                },
+                "fee": {
+                  "type": "number"
+                },
+                "fee_channel": {
+                  "type": "string"
+                },
+                "usdt_price": {
+                  "description": "用 USDT 付款时的价格（比人民币便宜时才有）",
+                  "type": "number"
+                },
+                "usdt_only": {
+                  "description": "该店只收 USDT",
+                  "type": "boolean"
+                },
+                "stock": {
+                  "type": "string",
+                  "enum": [
+                    "in_stock",
+                    "unknown",
+                    "out"
+                  ]
+                },
+                "stock_count": {
+                  "type": "number"
+                },
+                "checked_at": {
+                  "type": "string"
+                },
+                "shop_page": {
+                  "type": "string",
+                  "description": "水獭上的店铺详情页"
+                }
+              },
+              "required": [
+                "shop",
+                "shop_token",
+                "platform",
+                "price",
+                "stock",
+                "shop_page"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "url": {
+            "type": "string"
+          },
+          "updated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sku",
+          "name",
+          "total",
+          "offers",
+          "url",
+          "updated"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_price_trend",
+      "title": "查询近 30 天价格走势",
+      "description": "查询某个 AI 产品近 30 天每天的可买最低价走势（与详情页走势图同口径），返回起止价格、最高最低点和涨跌幅。用于回答「最近是涨还是跌」「现在是不是低点」。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string",
+            "minLength": 1,
+            "description": "产品 SKU 或名称，如 'claude_pro'、'gpt_plus_topup'"
+          }
+        },
+        "required": [
+          "sku"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "points": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "date": {
+                  "type": "string",
+                  "description": "MM-DD，北京时间"
+                },
+                "price": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "date",
+                "price"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "first": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "last": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "low": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "high": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "change_pct": {
+            "description": "首日到最新一天的涨跌幅（%）",
+            "type": [
+              "number",
+              "null"
+            ]
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "sku",
+          "name",
+          "points",
+          "first",
+          "last",
+          "low",
+          "high",
+          "change_pct",
+          "url"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_shops",
+      "title": "列出收录店铺",
+      "description": "按在售商品数列出水獭收录的 AI 订阅店铺（卡网、独立站），可按平台筛选；返回店名、平台、在售商品数与水獭上的店铺页。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "limit": {
+            "default": 10,
+            "description": "返回数量，默认 10，最多 30",
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 30
+          },
+          "platform": {
+            "description": "按平台过滤，如 ldxp（链动小铺）、aisou、catfk、jrsoft（鲸软）、cardnet、dujiao_next；传错时会列出可选值",
+            "type": "string"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "description": "符合筛选条件的店铺总数"
+          },
+          "platforms": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "shops": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "token": {
+                  "type": "string"
+                },
+                "platform": {
+                  "type": "string"
+                },
+                "item_count": {
+                  "type": "number"
+                },
+                "shop_page": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "name",
+                "token",
+                "platform",
+                "item_count",
+                "shop_page"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "updated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "total",
+          "platforms",
+          "shops",
+          "updated"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "get_site_stats",
+      "title": "站点统计概览",
+      "description": "获取水獭比价站整体统计：收录店铺数、Telegram Bot 数、产品种类、商品总数与数据更新时间。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {},
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "shops": {
+            "type": "number"
+          },
+          "bots": {
+            "type": "number"
+          },
+          "skus": {
+            "type": "number"
+          },
+          "skus_with_price": {
+            "type": "number"
+          },
+          "items": {
+            "type": "number"
+          },
+          "updated": {
+            "type": "string"
+          },
+          "generated_at": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "shops",
+          "bots",
+          "skus",
+          "skus_with_price",
+          "items",
+          "updated",
+          "generated_at"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    },
+    {
+      "name": "list_all_products",
+      "title": "全部产品一览",
+      "description": "列出所有可比价的 AI 产品（SKU）及店内到手价区间，方便了解全站覆盖范围。",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sort": {
+            "default": "hits",
+            "description": "排序方式：price（店内最低价）、hits（广告热度）、merchants（在售店铺数）",
+            "type": "string",
+            "enum": [
+              "price",
+              "hits",
+              "merchants"
+            ]
+          },
+          "has_price_only": {
+            "default": false,
+            "description": "仅显示有核验价格的产品",
+            "type": "boolean"
+          }
+        },
+        "$schema": "http://json-schema.org/draft-07/schema#"
+      },
+      "outputSchema": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number"
+          },
+          "products": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "sku": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "min_price": {
+                  "description": "可买最低到手价（人民币，有货优先）",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "max_price": {
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "merchants": {
+                  "description": "在售店铺数",
+                  "type": [
+                    "number",
+                    "null"
+                  ]
+                },
+                "url": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "sku",
+                "name",
+                "min_price",
+                "max_price",
+                "merchants",
+                "url"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "updated": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "total",
+          "products",
+          "updated"
+        ],
+        "$schema": "http://json-schema.org/draft-07/schema#",
+        "additionalProperties": false
+      },
+      "annotations": {
+        "readOnlyHint": true,
+        "openWorldHint": true
+      },
+      "execution": {
+        "taskSupport": "forbidden"
+      }
+    }
+  ],
+  "version": "1.5.0"
+}

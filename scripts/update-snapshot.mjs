@@ -8,6 +8,10 @@ const SOURCE = "https://shuita.xyz/llms.txt";
 const README = new URL("../README.md", import.meta.url);
 const START = "<!-- snapshot:start -->";
 const END = "<!-- snapshot:end -->";
+const STATS_EN_START = "<!-- stats:en:start -->";
+const STATS_EN_END = "<!-- stats:en:end -->";
+const STATS_ZH_START = "<!-- stats:zh:start -->";
+const STATS_ZH_END = "<!-- stats:zh:end -->";
 const MIN_ROWS = 5;
 
 // 接码、邮箱、免费号这类配件不放进 README 快照
@@ -44,6 +48,7 @@ async function fetchText(url) {
 
 const LINE =
   /^- \[(.+?)\]\(https:\/\/shuita\.xyz\/sku\/([a-z0-9_]+)\): 可买最低价 ¥([\d.]+)，店内最高 ¥([\d.]+)，(\d+) 家卡网在售(?:；美区官方月价 (\$[\d.]+))?/;
+const STATS_LINE = /(\d+)\s*家发卡网与独立小铺[、,]\s*(\d+)\s*件在售商品/;
 
 function displayName(sku, name) {
   if (NAMES[sku]) return NAMES[sku];
@@ -73,7 +78,11 @@ function parse(text) {
     return ra[0] - rb[0] || ra[1] - rb[1] || a.min - b.min;
   });
   const stamp = /数据更新状态：(\d+)月(\d+)日 (\d{1,2}:\d{2})/.exec(text);
-  return { rows, stamp };
+  const statsMatch = STATS_LINE.exec(text);
+  const stats = statsMatch
+    ? { shops: Number(statsMatch[1]), listings: Number(statsMatch[2]) }
+    : null;
+  return { rows, stamp, stats };
 }
 
 function stampLabel(stamp) {
@@ -98,7 +107,18 @@ function table(rows) {
   ].join("\n");
 }
 
-const { rows, stamp } = parse(await fetchText(SOURCE));
+function replaceOptionalMarker(text, start, end, nextInner) {
+  const a = text.indexOf(start);
+  const b = text.indexOf(end);
+  if (a === -1 || b === -1 || b < a) return { text, changed: false };
+  if (text.slice(a + start.length, b) === nextInner) return { text, changed: false };
+  return {
+    text: text.slice(0, a + start.length) + nextInner + text.slice(b),
+    changed: true,
+  };
+}
+
+const { rows, stamp, stats } = parse(await fetchText(SOURCE));
 if (rows.length < MIN_ROWS) {
   console.error(`只解析到 ${rows.length} 行，llms.txt 格式可能变了，不改 README`);
   process.exit(1);
@@ -113,15 +133,35 @@ if (a === -1 || b === -1 || b < a) {
 }
 const oldBlock = readme.slice(a + START.length, b);
 const newTable = table(rows);
-if (oldBlock.includes(newTable)) {
-  console.log(`表格没有变化（${rows.length} 行），不改 README`);
-  process.exit(0);
-}
+const tableChanged = !oldBlock.includes(newTable);
 
-const block = `
+let nextReadme = readme;
+if (tableChanged) {
+  const block = `
 数据时间：${stampLabel(stamp)}（北京时间），每天自动从 [shuita.xyz/llms.txt](https://shuita.xyz/llms.txt) 刷新。只作量级参考，实时价格以 MCP 返回或商品页为准。「低至」是公开有货店铺里的最低人民币到手价；同一产品的低价往往对应短效、拼车或短质保等不同规格。
 
 ${newTable}
 `;
-writeFileSync(README, readme.slice(0, a + START.length) + block + readme.slice(b));
-console.log(`已更新快照：${rows.length} 行，数据时间 ${stampLabel(stamp)}`);
+  nextReadme = readme.slice(0, a + START.length) + block + readme.slice(b);
+}
+
+let statsChanged = false;
+if (stats) {
+  const enStats = `**${stats.shops} verified shops · ${stats.listings} in-stock listings · 70+ products** (refreshed daily; \`get_site_stats\` returns live numbers).`;
+  const zhStats = `${stats.shops} 家店铺、${stats.listings} 件在售商品、70+ 种产品`;
+  const resEn = replaceOptionalMarker(nextReadme, STATS_EN_START, STATS_EN_END, enStats);
+  nextReadme = resEn.text;
+  const resZh = replaceOptionalMarker(nextReadme, STATS_ZH_START, STATS_ZH_END, zhStats);
+  nextReadme = resZh.text;
+  statsChanged = resEn.changed || resZh.changed;
+}
+
+if (!tableChanged && !statsChanged) {
+  console.log(`表格与统计均无变化（${rows.length} 行），不改 README`);
+  process.exit(0);
+}
+
+writeFileSync(README, nextReadme);
+console.log(
+  `已更新快照：${rows.length} 行（table=${tableChanged}, stats=${statsChanged}），数据时间 ${stampLabel(stamp)}`,
+);
