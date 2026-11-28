@@ -267,6 +267,8 @@ MCP 负责查数据，Skill 负责解读：规格差异、报价口径和风险�
 | MCP 接入文档 | <https://shuita.xyz/mcp> |
 | AI 站点摘要 | <https://shuita.xyz/llms.txt> |
 | 月度价格报告（含 CSV） | <https://shuita.xyz/reports> |
+| Hugging Face 数据集 | <https://huggingface.co/datasets/shuita-xyz/ai-subscription-prices> |
+| Kaggle 数据集 | <https://www.kaggle.com/datasets/shuitaxyz/ai-subscription-prices> |
 | 购买避坑指南 | <https://shuita.xyz/guides> |
 | npm 包 | <https://www.npmjs.com/package/ai-price-mcp> |
 | 官方 MCP Registry | `xyz.shuita/ai-price` |
